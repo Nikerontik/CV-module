@@ -13,6 +13,9 @@ class Detector:
         self.fps = 0.0
         self.latency_ms = 0.0
         self.events = []
+        self.last_event_time = {}
+        self.event_cooldown = 3.0
+        self.max_events = 100
 
     def start(self):
         if not self.cap.isOpened():
@@ -21,6 +24,9 @@ class Detector:
 
     def stop(self):
         self.running = False
+        self.last_frame = None
+        self.fps = 0.0
+        self.latency_ms = 0.0
 
     def process_frame(self):
         start_time = time.time()
@@ -29,7 +35,7 @@ class Detector:
             return None
 
         results = self.model(frame, verbose=False)
-        detections = []
+        now = time.time()
 
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
@@ -41,15 +47,20 @@ class Detector:
 
             xyxy = box.xyxy[0].tolist()
             mapped_class = config.map_class(name)
-            detections.append((mapped_class, conf, xyxy))
 
             x1, y1, x2, y2 = map(int, xyxy)
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 200, 0), 2)
             cv2.putText(frame, f"{mapped_class} {conf:.2f}", (x1, y1 - 8),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 0), 2)
 
-            event = make_event(mapped_class, conf, xyxy)
-            self.events.append(event)
+            last_time = self.last_event_time.get(mapped_class, 0)
+            if now - last_time >= self.event_cooldown:
+                event = make_event(mapped_class, conf, xyxy)
+                self.events.append(event)
+                self.last_event_time[mapped_class] = now
+
+        if len(self.events) > self.max_events:
+            self.events = self.events[-self.max_events:]
 
         elapsed = time.time() - start_time
         self.latency_ms = elapsed * 1000
@@ -67,4 +78,4 @@ class Detector:
         }
 
     def get_events(self):
-        return self.events
+        return list(reversed(self.events))

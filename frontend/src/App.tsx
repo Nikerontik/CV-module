@@ -19,8 +19,10 @@ function App() {
       setStatus(statusData);
       setEvents(eventsData);
       if (statusData.state === 'running') {
-        setFrameUrl(getLatestFrameUrl());
-      }
+  setFrameUrl(getLatestFrameUrl());
+} else {
+  setFrameUrl(null);
+}
     } catch {
       setStatus((prev) => (prev ? { ...prev, state: 'error' } : { state: 'error', source: '', fps: 0, latency_ms: 0 }));
     }
@@ -50,12 +52,7 @@ function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
-            <VideoPanel
-              frameUrl={frameUrl}
-              detections={events}
-              frameWidth={1280}
-              frameHeight={720}
-            />
+            <VideoPanel frameUrl={frameUrl} />
             <ControlsBar
               running={status?.state === 'running'}
               onStart={handleStart}
