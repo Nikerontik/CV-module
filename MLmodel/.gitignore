@@ -4,3 +4,4 @@ __pycache__/
 models/*.pt
 models/*.onnx
 videos/*.mp4
+logs/

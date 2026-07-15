@@ -27,3 +27,15 @@ export async function stopProcessing(): Promise<void> {
 export function getLatestFrameUrl(): string {
   return `${BASE_URL}/frame/latest?ts=${Date.now()}`;
 }
+
+export async function setSource(source: 'camera' | 'video'): Promise<void> {
+  const res = await fetch(`${BASE_URL}/config?source=${source}`, { method: 'POST' });
+  if (!res.ok) throw new Error('Failed to set source');
+}
+
+export async function uploadVideo(file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await fetch(`${BASE_URL}/upload`, { method: 'POST', body: formData });
+  if (!res.ok) throw new Error('Failed to upload video');
+}

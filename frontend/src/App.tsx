@@ -6,6 +6,7 @@ import EventsList from './components/EventsList';
 import StatusMetrics from './components/StatusMetrics';
 import type { DetectionEvent, StatusInfo } from './types';
 import { getStatus, getEvents, startProcessing, stopProcessing, getLatestFrameUrl } from './api';
+import SourceSelector from './components/SourceSelector';
 
 function App() {
   const [threshold, setThreshold] = useState(0.5);
@@ -52,6 +53,7 @@ function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 space-y-4">
+            <SourceSelector disabled={status?.state === 'running'} />
             <VideoPanel frameUrl={frameUrl} />
             <ControlsBar
               running={status?.state === 'running'}
